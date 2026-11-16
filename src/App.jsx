@@ -1,64 +1,51 @@
 import { useEffect, useState } from 'react'
-import { AnimatePresence, motion } from 'framer-motion'
-import Navbar from './components/Navbar'
-import Hero from './components/Hero'
 import About from './components/About'
-import Skills from './components/Skills'
-import Experience from './components/Experience'
-import Projects from './components/Projects'
 import Contact from './components/Contact'
+import Experience from './components/Experience'
 import Footer from './components/Footer'
-import Loader from './components/Loader'
+import Hero from './components/Hero'
 import MouseFollower from './components/MouseFollower'
-import { navLinks } from './data/portfolioData'
+import Navbar from './components/Navbar'
+import Projects from './components/Projects'
+import Skills from './components/Skills'
 import Testimonial from './components/Testimonial'
+import { navLinks } from './data/portfolioData'
 
-const App = () => {
+function App() {
   const [activeSection, setActiveSection] = useState('home')
-  const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    const timer = setTimeout(() => setIsLoading(false), 1300)
-    return () => clearTimeout(timer)
-  }, [])
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            setActiveSection(entry.target.id)
-          }
+    const updateActiveSection = () => {
+      const currentSection = [...navLinks]
+        .reverse()
+        .find(({ id }) => {
+          const section = document.getElementById(id)
+          return section && section.getBoundingClientRect().top <= 120
         })
-      },
-      { threshold: 0.4 },
-    )
 
-    navLinks.forEach((link) => {
-      const element = document.getElementById(link.id)
-      if (element) observer.observe(element)
-    })
+      setActiveSection(currentSection?.id ?? 'home')
+    }
 
-    return () => observer.disconnect()
+    window.addEventListener('scroll', updateActiveSection)
+    updateActiveSection()
+
+    return () => window.removeEventListener('scroll', updateActiveSection)
   }, [])
 
   return (
     <>
-      <AnimatePresence>{isLoading && <Loader />}</AnimatePresence>
       <MouseFollower />
-      <div className="relative min-h-screen overflow-x-hidden bg-[#020617] text-slate-100">
-        <Navbar activeSection={activeSection} />
-        <motion.main initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.6 }}>
-          <Hero />
-          <About />
-          <Skills />
-          <Experience />
-          <Projects />
-          <Testimonial />
-          <Contact />
-        </motion.main>
-        <Footer />
-      </div>
+      <Navbar activeSection={activeSection} />
+      <main>
+        <Hero />
+        <About />
+        <Skills />
+        <Experience />
+        <Projects />
+        <Testimonial />
+        <Contact />
+      </main>
+      <Footer />
     </>
   )
 }
